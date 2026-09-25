@@ -1,8 +1,8 @@
 # 📋 Bunnytics — Task Assignment Board
 ## BI10 Round 01 · Nhóm 3 người
 
-> **Repo**: [Bunnytics_BI10_Round1](https://github.com/duongdaominhduc-pixel/Bunnytics_BI10_Round1)  
-> **Deadline**: _[Cập nhật deadline]_  
+> **Repo**: [Bunnytics_BI10_Round1](https://github.com/duongdaominhduc-pixel/Bunnytics_BI10_Round1)
+> **Deadline**: 23:59, September 28, 2026
 > **Last updated**: 2026-09-25
 
 ---
@@ -17,149 +17,191 @@
 
 ---
 
-## 📊 Task Assignment Table
+## 🚦 Legend
 
-### Legend
-- 🔴 Not started · 🟡 In progress · 🟢 Done · 👤 Primary · 👥 Support
-
----
-
-### Phase 0–1: Setup & Data Quality
-
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| 0.1 | Setup môi trường, venv, requirements | A | — | 🟢 | — | Đã xong |
-| 0.2 | Load data, kiểm tra cấu trúc | A | — | 🟢 | — | Đã xong |
-| 1.1 | Missing values analysis | A | — | 🟢 | | |
-| 1.2 | Duplicate detection | A | — | 🟢 | | |
-| 1.3 | Outlier detection | A | — | 🟢 | | |
-| 1.4 | Data consistency checks | A | — | 🟢 | | |
-| 1.5 | Temporal coverage check | A | — | 🟢 | | Tại sao 10,992 thay vì 11,988? |
-| 1.6 | Cross-dataset consistency | A | — | 🟢 | | txn ↔ monthly match? |
+- 🔴 Not started · 🟡 In progress · 🟢 Done
+- **Primary**: Người chịu trách nhiệm chính — làm code + viết manuscript
+- **Support**: Người review, ghép slide, hoặc hỗ trợ khi cần
 
 ---
 
-### Phase 2: Task 1 — EDA (20%)
+## ⚙️ Phase 0–1: Setup & Data Quality
 
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| 2.1 | **Q1**: Tháng chi tiêu cao nhất (VND + %) | B | — | 🔴 | | Bar chart 12 tháng |
-| 2.2 | **Q2**: Tỉnh chi tiêu cao + digital thấp | B | — | 🔴 | | ≥ 2 tỉnh, channel breakdown |
-| 2.3 | **Q3**: Top category (count vs spend) | B | — | 🔴 | | Avg ticket size comparison |
-| 2.4 | **Q4**: Age cohort active nhưng health thấp | B | A | 🔴 | | essential_ratio, spend_to_income |
-| 2.5 | Spending decomposition & seasonal | B | — | 🔴 | | Essential vs Discretionary |
-| 2.6 | Slide #6–9: Tổng hợp visual cho Task 1 | C | B | 🔴 | | Thiết kế biểu đồ đẹp |
-
----
-
-### Phase 3: Task 2 — Financial Health (20%)
-
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| 3.1 | Health score distribution + trends | A | — | 🟢 | | Histogram, KDE, monthly trend |
-| 3.2 | Drivers of low health (correlation + FI) | A | — | 🟢 | | Feature importance, ratio-based |
-| 3.3 | Khác biệt theo occupation, age, province | A | C | 🟢 | | Box/violin plots |
-| 3.4 | **Crossover: Stressed × Engaged** | A | B | 🟢 | | Rule + size + profile |
-| 3.5 | Slide #10–12: Tổng hợp visual cho Task 2 | C | A | 🔴 | | |
+| # | Task | Primary | Support | Status | Notes |
+|---|------|---------|---------|--------|-------|
+| 0.1 | Setup môi trường, venv, install requirements | A | — | 🟢 | Xong |
+| 0.2 | Load data, kiểm tra cột/schema | A | — | 🟢 | Xong — 10,992 rows (sẽ giải thích) |
+| 1.1 | Missing values analysis | A | — | 🟢 | next_month_low_health_flag: 999 nulls (Dec) |
+| 1.2 | Duplicate detection (consumer_id × month) | A | — | 🟢 | 0 dupes |
+| 1.3 | Outlier detection (scores, VND) | A | — | 🟢 | no neg spend |
+| 1.4 | Consistency check: ratio fields sum đúng không? | A | — | 🔴 | |
+| 1.5 | Temporal coverage: tại sao 10,992 ≠ 999×12? | A | — | 🔴 | |
+| 1.6 | Cross-dataset link: consumer_id match giữa 2 file | A | — | 🔴 | |
 
 ---
 
-### Phase 4: Task 3 — Engagement (20%)
+## 📊 Task 1: Exploratory Data Analysis (EDA) — 20%
 
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| 4.1 | Engagement score distribution + segments | B | — | 🔴 | | Histogram + donut |
-| 4.2 | Channel adoption breakdown | B | — | 🔴 | | POS/QR/E-com/App/Recurring |
-| 4.3 | Category diversity ↔ engagement | B | — | 🔴 | | Scatter + correlation |
-| 4.4 | Recency & frequency ↔ engagement | B | — | 🔴 | | Churn risk identification |
-| 4.5 | **Crossover: Healthy × Disengaged** | B | A | 🔴 | | Cutoff + justification + profile |
-| 4.6 | Slide #13–14: Tổng hợp visual cho Task 3 | C | B | 🔴 | | |
+> **Đề yêu cầu trả lời đúng 5 câu hỏi sau, kèm số liệu, tỷ lệ, biểu đồ.**
 
----
+| # | Câu hỏi (nguyên văn đề) | Primary | Support | Status |
+|---|------------------------|---------|---------|--------|
+| **Q1** | _Which month records the highest total spend, and how much does it account for (in VND and as a % of annual spend) compared to the lowest spending month? Is this peak driven primarily by higher transaction count or larger ticket sizes? What does this pattern reveal about consumer spending behavior during peak periods?_ | B | — | 🔴 |
+| **Q2** | _Compare the proportion of Essential vs. Discretionary spend between financially stressed customers (financial_health_score < 40) and healthy customers (financial_health_score ≥ 80). Based on the data, what does this spending composition reveal about how financial stress alters a customer's budget allocation?_ | B | — | 🔴 |
+| **Q3** | _Identify 2 or more provinces/cities that generate high total spend volume but have a lower-than-average digital transaction share. Compare their channel breakdown (POS vs. digital channels) to quantify and explain the nature of their digital adoption gap._ | B | — | 🔴 |
+| **Q4** | _Identify the top category by transaction count and the top category by total spend volume. Compare their average ticket sizes (VND per transaction) and explain how consumer usage behavior differs between these two categories._ | B | — | 🔴 |
+| **Q5** | _Which age cohort maintains active transaction frequency while recording the lowest average financial_health_score? Contrast their spending metrics (essential spend ratio and spend-to-income ratio) with other age cohorts to explain the drivers of their financial vulnerability._ | B | A | 🔴 |
 
-### Phase 5: Task 4 — Segmentation (20%)
+**Deliverables (đề yêu cầu):**
+- Quantitative answers to Q1–Q5 với số chính xác, %, ratio
+- Decomposition: transaction volume vs. ticket size; essential vs. discretionary
+- Nhận xét business về consumer behavior
+- Biểu đồ phù hợp từng phần
 
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| 5.1 | Feature engineering & preprocessing | A | B | 🔴 | | 4 dimensions, scaling |
-| 5.2 | Model selection (K-Means / Rule-based) | A | B | 🔴 | | Elbow, silhouette |
-| 5.3 | Build 6 segment profiles | A | B | 🔴 | | Radar chart, summary table |
-| 5.4 | Post-segmentation comparison | A | — | 🔴 | | Heatmap, side-by-side |
-| 5.5 | Limitations & future work | A | B | 🔴 | | |
-| 5.6 | Slide #15–18: Tổng hợp visual cho Task 4 | C | A | 🔴 | | |
+> 📝 Sau khi xong → viết kết quả vào `manuscript/task1_eda_manuscript.md`
 
 ---
 
-### Phase 6: Task 5 — Recommendations (15%)
+## 💊 Task 2: Financial Health Analysis — 20%
 
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| 6.1 | Budgeting Tools — đề xuất + target + data | C | A | 🔴 | | |
-| 6.2 | Spend Alerts — đề xuất + target + data | C | A | 🔴 | | |
-| 6.3 | Financial-Planning Reminders | C | B | 🔴 | | |
-| 6.4 | Financial-Education Content | C | B | 🔴 | | |
-| 6.5 | Digital-Channel Nudges | C | B | 🔴 | | Link to Q2 findings |
-| 6.6 | Product Suggestions | C | A | 🔴 | | |
-| 6.7 | Prioritisation matrix + credit rule | C | A | 🔴 | | |
-| 6.8 | Slide #19–20: Tổng hợp visual cho Task 5 | C | — | 🔴 | | |
+> **Đề yêu cầu phân tích health score và tìm crossover segment.**
+> **Lưu ý đề**: Dùng ratio-based fields, KHÔNG dùng raw VND để so sánh. Mọi claim phải có số hoặc biểu đồ.
 
----
+| # | Deliverable (nguyên văn đề) | Primary | Support | Status |
+|---|--------------------------|---------|---------|--------|
+| **2.1** | _Distribution of financial_health_score_ — phân phối score, trend theo tháng, breakdown theo segment | A | — | 🟢 |
+| **2.2** | _Main factors associated with low health_ — các biến tương quan mạnh với score thấp (dùng ratio features) | A | — | 🟢 |
+| **2.3** | _Differences by occupation, age, and province_ — health score khác nhau như thế nào theo nhân khẩu học | A | C | 🟢 |
+| **2.4** | _Identify customers who are financially stressed but highly engaged; define and apply a clear, reproducible rule to identify this crossover segment_ — đưa ra rule (ví dụ: health_score < 40 & engagement_score ≥ X), giải thích lý do chọn ngưỡng, số lượng và profile nhóm này | A | B | 🟢 |
 
-### Slide Proposal & Communication (10%)
+**Nguồn data chính**: `consumer_financial_health_engagement_2025.csv`
+**Nguồn phụ (nếu cần chi tiết)**: `consumer_transactions_2025.csv` (merchant/category/timestamp)
 
-| # | Task | Người phụ trách | Support | Status | Deadline | Notes |
-|---|------|----------------|---------|--------|----------|-------|
-| S.1 | Thiết kế template slide (16:9, color palette) | C | — | 🔴 | | Canva / PowerPoint |
-| S.2 | Slide #1: Cover page | C | — | 🔴 | | Team info, logo |
-| S.3 | Slide #2: Executive Summary | A | B, C | 🔴 | | **Viết cuối cùng** |
-| S.4 | Slide #3: Table of Contents | C | — | 🔴 | | |
-| S.5 | Slide #4–5: Introduction | C | A | 🔴 | | Business context + data quality |
-| S.6 | Slide #21: Key Takeaways | A | B | 🔴 | | |
-| S.7 | Slide #22: Thank You & Contact | C | — | 🔴 | | |
-| S.8 | Review toàn bộ slide, chỉnh sửa cuối | A, B, C | — | 🔴 | | Cả nhóm review |
+> 📝 Sau khi xong → viết kết quả vào `manuscript/task2_financial_health_report.md`
+
 
 ---
 
-## 📈 Workload Summary
+## 📱 Task 3: Customer Engagement Analysis — 20%
 
-| Thành viên | Primary Tasks | Trọng tâm |
-|------------|--------------|------------|
-| **A** | Phase 0–1, Task 2, Task 4, Exec Summary | Data Quality, Financial Health, Segmentation |
-| **B** | Task 1, Task 3 | EDA, Engagement Analysis |
-| **C** | Task 5, Slide Design, Visual | Recommendations, Presentation, Chart Design |
+> **Đề yêu cầu 6 objectives, deliverables tương ứng.**
 
-```mermaid
-gantt
-    title Phân chia công việc theo timeline
-    dateFormat  YYYY-MM-DD
-    axisFormat  %d/%m
+| # | Objective (nguyên văn đề) | Deliverable | Primary | Support | Status |
+|---|--------------------------|-------------|---------|---------|--------|
+| **3.1** | _Show how engagement_score is spread across the customer base_ | Distribution + share of customers in each engagement segment | B | — | 🔴 |
+| **3.2** | _Show which channels customers use, and how much of their spend is digital_ | Channel adoption breakdown (POS, QR, E-commerce, Mobile App, Recurring) + avg online spend share | B | — | 🔴 |
+| **3.3** | _Show how many spending categories a customer typically uses_ | Category diversity range + mối liên hệ với engagement score | B | — | 🔴 |
+| **3.4** | _Show how often and how recently customers transact_ | Recency & frequency ranges + link to engagement | B | — | 🔴 |
+| **3.5** | _Find customers who are financially healthy but not engaged — a group at risk of leaving even though they are good customers. State the score cutoff used to define "high" and "low", since the task does not give one_ | Exact size & profile của nhóm high-health, low-engagement + giải thích tại sao chọn cutoff này (so với stricter/looser) | B | A | 🔴 |
+| **3.6** | _Use a chart that fits the data for each part, so a reader can see the pattern, not just read numbers_ | Mỗi phần dùng chart type phù hợp | C | B | 🔴 |
 
-    section A (Leader)
-    Setup & Data Quality      :a1, 2025-09-26, 1d
-    Task 2 — Financial Health :a2, 2025-09-28, 2d
-    Task 4 — Segmentation    :a3, 2025-10-01, 2d
-    Executive Summary         :a4, 2025-10-04, 1d
-
-    section B
-    Task 1 — EDA             :b1, 2025-09-26, 2d
-    Task 3 — Engagement      :b2, 2025-09-29, 2d
-    Review & Support          :b3, 2025-10-03, 1d
-
-    section C (Designer)
-    Slide Template Design    :c1, 2025-09-26, 1d
-    Task 1–3 Visuals         :c2, 2025-09-28, 2d
-    Task 5 — Recommendations :c3, 2025-10-01, 2d
-    Final Slide Assembly     :c4, 2025-10-03, 2d
-```
+> 📝 Sau khi xong → viết kết quả vào `manuscript/task3_engagement_manuscript.md`
 
 ---
 
-## 📌 Workflow Rules
+## 🗂️ Task 4: Customer Segmentation — 20%
 
-1. **Branch naming**: `feature/task1-eda`, `feature/task2-health`, `feature/task4-segmentation`, ...
-2. **Commit messages**: `[Task X] Brief description` — ví dụ `[Task 1] Add Q1 monthly spend analysis`
-3. **Pull requests**: Tạo PR khi xong mỗi task, assign reviewer = 1 người khác trong nhóm
-4. **Data files**: KHÔNG commit file CSV lớn (đã có `.gitignore`). Mỗi người tự download dataset vào folder `ĐỀ BÀI/DATASET/`
+> **Đề yêu cầu xây dựng model phân khúc data-driven.**
+
+### Bước 1: Data Preprocessing & Feature Engineering
+
+| # | Task | Primary | Support | Status |
+|---|------|---------|---------|--------|
+| **4.1** | Chuẩn bị features từ 4 nhóm: Demographics (age, gender, occupation, province_city), Financial Health (income, credit limit, utilization, health score, avg transaction, volatility...), Engagement (transaction count, active days, engagement score...), Spending Behavior (category diversity, essential/discretionary/online ratio...) | A | B | 🔴 |
+
+### Bước 2: Customer Segmentation Model
+
+| # | Task | Primary | Support | Status |
+|---|------|---------|---------|--------|
+| **4.2** | Feature selection & engineering (chọn metrics key, tính thêm ratios nếu cần) | A | B | 🔴 |
+| **4.3** | Model selection & setup: chọn K-Means, GMM, hoặc Rule-Based Matrix — **giải thích lý do chọn** | A | B | 🔴 |
+| **4.4** | Implementation & validation: đảm bảo 100% coverage, validate cluster quality hoặc rule distribution | A | — | 🔴 |
+| **4.5** | Customer profiling: gán business label cho từng segment (6 nhóm gợi ý, không bắt buộc): **Financially Healthy & Highly Engaged · Financially Healthy but Disengaged · Financially Stretched but Highly Engaged · Low Engagement & Financially Vulnerable · Emerging Digital Customers · Essential-Spend-Focused Customers** | A | B | 🔴 |
+| **4.6** | Post-segmentation analysis: so sánh các nhóm side-by-side, nêu key behavioral differences | A | B | 🔴 |
+
+### Bước 3: Limitations & Future Work
+
+| # | Task | Primary | Support | Status |
+|---|------|---------|---------|--------|
+| **4.7** | Xác định hạn chế kỹ thuật & operational của model | A | B | 🔴 |
+| **4.8** | Gợi ý cải thiện cho future work | A | — | 🔴 |
+
+**Deliverables (đề yêu cầu):**
+- Preprocessed dataset với tất cả engineered features
+- Segmentation model (clustering OR rule-based) + segment profiles
+- Limitations & Future Work
+
+> 📝 Sau khi xong → viết kết quả vào `manuscript/task4_segmentation_manuscript.md`
+
+---
+
+## 💡 Task 5: Business Recommendations — 15%
+
+> **Đề yêu cầu 6 loại intervention, mỗi cái phải link với số liệu thực từ data.**
+> **Constraint tuyệt đối**: KHÔNG đề xuất từ chối tín dụng dựa trên financial_health_score.
+
+| # | Tool Type | Yêu cầu cụ thể | Primary | Support | Status |
+|---|-----------|---------------|---------|---------|--------|
+| **5.1** | Budgeting Tools | Link với finding thực từ data, có target group + số lượng KH reach được | C | A | 🔴 |
+| **5.2** | Spend Alerts | Link với finding thực từ data, có target group + số lượng KH reach được | C | A | 🔴 |
+| **5.3** | Financial-Planning Reminders | Link với finding thực từ data, có target group + số lượng KH reach được | C | B | 🔴 |
+| **5.4** | Financial-Education Content | Link với finding thực từ data, có target group + số lượng KH reach được | C | B | 🔴 |
+| **5.5** | Digital-Channel Nudges | Link với finding thực từ data, có target group + số lượng KH reach được | C | B | 🔴 |
+| **5.6** | Suitable Product Suggestions | Link với finding thực từ data, có target group + số lượng KH reach được | C | A | 🔴 |
+| **5.7** | Prioritisation: rank 6 ideas by **reach** và **driver strength** | Bảng ranking rõ ràng | C | A | 🔴 |
+| **5.8** | Credit-decision rule statement: _"financial_health_score must never be used to deny credit, cut a credit limit, or block an account"_ | Statement explicit trên slide | C | — | 🔴 |
+
+**Deliverables (đề yêu cầu):**
+- 1 clear proposal cho mỗi trong 6 tool types, mỗi cái linked to a real number/column from data
+- Clear target groups với exact sizes và percentages
+- A clear statement of the credit-decision rule
+
+> 📝 Sau khi xong → viết kết quả vào `manuscript/task5_recommendations_manuscript.md`
+
+---
+
+## 🖼️ Slide Proposal (max 22 slides)
+
+| # | Slide | Người làm | Dựa trên | Status |
+|---|-------|----------|----------|--------|
+| S1 | Cover | C | — | 🔴 |
+| S2 | Executive Summary | A | Tất cả manuscripts (viết sau cùng) | 🔴 |
+| S3 | Table of Contents | C | — | 🔴 |
+| S4–5 | Introduction to Case (business context + data quality) | C | A | 🔴 |
+| S6–9 | Task 1 — EDA (4 slides) | C | `task1_eda_manuscript.md` | 🔴 |
+| S10–12 | Task 2 — Financial Health (3 slides) | C | `task2_health_manuscript.md` | 🔴 |
+| S13–14 | Task 3 — Engagement (2 slides) | C | `task3_engagement_manuscript.md` | 🔴 |
+| S15–18 | Task 4 — Segmentation (4 slides) | C | `task4_segmentation_manuscript.md` | 🔴 |
+| S19–20 | Task 5 — Recommendations (2 slides) | C | `task5_recommendations_manuscript.md` | 🔴 |
+| S21 | Key Takeaways | A | — | 🔴 |
+| S22 | Thank You / Contact | C | — | 🔴 |
+
+**File name**: `Bunnytics_[LeaderName]_BI10_R01.pptx`
+**Format**: 16:9, max 100 MB, ngôn ngữ: **English**
+
+---
+
+## 📈 Overall Progress
+
+| Task | Người phụ trách | Weight | Status | % |
+|------|----------------|--------|--------|---|
+| Phase 0–1: Setup & DQ | A | — | 🟡 | 30% |
+| Task 1: EDA | B | 20% | 🔴 | 0% |
+| Task 2: Financial Health | A | 20% | 🔴 | 0% |
+| Task 3: Engagement | B | 20% | 🔴 | 0% |
+| Task 4: Segmentation | A | 20% | 🔴 | 0% |
+| Task 5: Recommendations | C | 15% | 🔴 | 0% |
+| Communication/Slide | C | 5% | 🔴 | 0% |
+| **Total** | | **100%** | 🟡 | **~5%** |
+
+---
+
+## 📌 Git Workflow
+
+1. **Branches**: `feature/task1-eda` · `feature/task2-health` · `feature/task3-engagement` · `feature/task4-segmentation` · `feature/task5-recs`
+2. **Commit format**: `[Task X] Mô tả ngắn gọn` — ví dụ: `[Task 1] Q1 monthly spend analysis with chart`
+3. **Manuscript first**: Xong notebook → điền `manuscript/...` → PR → C làm slide
+4. **Không commit CSV lớn** — tự copy vào `ĐỀ BÀI/DATASET/` local
 5. **Communication**: Cập nhật status trong file này khi bắt đầu (🟡) và hoàn thành (🟢) task
 
 ---
@@ -175,4 +217,5 @@ gantt
 | Phase 5 | Task 4 — Segmentation | 🟢 | 100% |
 | Phase 6 | Task 5 — Recommendations | 🔴 | 0% |
 | Slides | Proposal (22 slides) | 🔴 | 0% |
-| **Overall** | | 🟡 | **~5%** |
+| **Overall** | | 🟡 | **~50%** |
+
