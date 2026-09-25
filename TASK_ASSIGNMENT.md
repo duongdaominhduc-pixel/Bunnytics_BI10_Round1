@@ -30,12 +30,12 @@
 |---|------|----------------|---------|--------|----------|-------|
 | 0.1 | Setup môi trường, venv, requirements | A | — | 🟢 | — | Đã xong |
 | 0.2 | Load data, kiểm tra cấu trúc | A | — | 🟢 | — | Đã xong |
-| 1.1 | Missing values analysis | A | — | 🔴 | | |
-| 1.2 | Duplicate detection | A | — | 🔴 | | |
-| 1.3 | Outlier detection | A | — | 🔴 | | |
-| 1.4 | Data consistency checks | A | — | 🔴 | | |
-| 1.5 | Temporal coverage check | A | — | 🔴 | | Tại sao 10,992 thay vì 11,988? |
-| 1.6 | Cross-dataset consistency | A | — | 🔴 | | txn ↔ monthly match? |
+| 1.1 | Missing values analysis | A | — | 🟢 | | |
+| 1.2 | Duplicate detection | A | — | 🟢 | | |
+| 1.3 | Outlier detection | A | — | 🟢 | | |
+| 1.4 | Data consistency checks | A | — | 🟢 | | |
+| 1.5 | Temporal coverage check | A | — | 🟢 | | Tại sao 10,992 thay vì 11,988? |
+| 1.6 | Cross-dataset consistency | A | — | 🟢 | | txn ↔ monthly match? |
 
 ---
 
@@ -168,7 +168,7 @@ gantt
 
 | Phase | Task | Status | % Complete |
 |-------|------|--------|------------|
-| Phase 0–1 | Setup & Data Quality | 🟡 | 30% |
+| Phase 0–1 | Setup & Data Quality | 🟢 | 100% |
 | Phase 2 | Task 1 — EDA | 🔴 | 0% |
 | Phase 3 | Task 2 — Financial Health | 🔴 | 0% |
 | Phase 4 | Task 3 — Engagement | 🔴 | 0% |

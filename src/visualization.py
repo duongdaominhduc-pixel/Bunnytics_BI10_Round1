@@ -5,13 +5,13 @@ Reusable plotting functions with consistent styling.
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# BI10 Color Palette
+# BI10 Color Palette (ORANGE CONCEPT)
 COLORS = {
-    'primary': '#1E3A5F',
-    'accent1': '#00B4D8',
-    'accent2': '#FF6B35',
-    'positive': '#06D6A0',
-    'negative': '#EF476F',
+    'primary': '#FF8C00',     # Dark Orange
+    'accent1': '#FFA500',     # Orange
+    'accent2': '#FF7F50',     # Coral/Orange
+    'positive': '#32CD32',    # Lime Green (keep green for positive)
+    'negative': '#DC143C',    # Crimson (keep red for negative)
     'neutral': '#8B95A5',
     'bg': '#F8F9FA',
     'text': '#212529',
