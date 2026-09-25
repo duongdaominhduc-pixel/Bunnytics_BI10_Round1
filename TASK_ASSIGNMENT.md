@@ -56,10 +56,10 @@
 
 | # | Task | Người phụ trách | Support | Status | Deadline | Notes |
 |---|------|----------------|---------|--------|----------|-------|
-| 3.1 | Health score distribution + trends | A | — | 🔴 | | Histogram, KDE, monthly trend |
-| 3.2 | Drivers of low health (correlation + FI) | A | — | 🔴 | | Feature importance, ratio-based |
-| 3.3 | Khác biệt theo occupation, age, province | A | C | 🔴 | | Box/violin plots |
-| 3.4 | **Crossover: Stressed × Engaged** | A | B | 🔴 | | Rule + size + profile |
+| 3.1 | Health score distribution + trends | A | — | 🟢 | | Histogram, KDE, monthly trend |
+| 3.2 | Drivers of low health (correlation + FI) | A | — | 🟢 | | Feature importance, ratio-based |
+| 3.3 | Khác biệt theo occupation, age, province | A | C | 🟢 | | Box/violin plots |
+| 3.4 | **Crossover: Stressed × Engaged** | A | B | 🟢 | | Rule + size + profile |
 | 3.5 | Slide #10–12: Tổng hợp visual cho Task 2 | C | A | 🔴 | | |
 
 ---
@@ -170,9 +170,9 @@ gantt
 |-------|------|--------|------------|
 | Phase 0–1 | Setup & Data Quality | 🟢 | 100% |
 | Phase 2 | Task 1 — EDA | 🔴 | 0% |
-| Phase 3 | Task 2 — Financial Health | 🔴 | 0% |
+| Phase 3 | Task 2 — Financial Health | 🟢 | 100% |
 | Phase 4 | Task 3 — Engagement | 🔴 | 0% |
-| Phase 5 | Task 4 — Segmentation | 🔴 | 0% |
+| Phase 5 | Task 4 — Segmentation | 🟢 | 100% |
 | Phase 6 | Task 5 — Recommendations | 🔴 | 0% |
 | Slides | Proposal (22 slides) | 🔴 | 0% |
 | **Overall** | | 🟡 | **~5%** |
