@@ -16,6 +16,7 @@
 │   ├── 03_engagement.ipynb
 │   ├── 04_segmentation.ipynb
 │   └── 05_recommendations.ipynb
+├── manuscript/                  # Raw text/data findings for slide presentation
 ├── src/                         # Reusable Python modules
 │   ├── data_loader.py
 │   ├── preprocessing.py

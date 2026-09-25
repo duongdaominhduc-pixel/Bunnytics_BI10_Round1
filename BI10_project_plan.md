@@ -52,6 +52,7 @@ PRELIMINARY PROJECT/
 │   ├── 03_engagement.ipynb
 │   ├── 04_segmentation.ipynb
 │   ├── 05_recommendations.ipynb
+├── manuscript/                        # Chứa file kết quả raw (.md) cho slide
 
 ├── src/                               # Module Python tái sử dụng
 │   ├── data_loader.py
