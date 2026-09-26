@@ -6,19 +6,18 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
-import os
-import sys
+import os, sys
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-# Orange Concept Color Palette (extended for 6 clusters)
+# Màu cho 6 segment
 SEGMENT_COLORS = {
     'Essential-Spend-Focused Customers': '#FF8C00',
     'Financially Stretched but Highly Engaged': '#DC143C',
     'Financially Healthy & Highly Engaged': '#32CD32',
     'Financially Healthy but Disengaged': '#4682B4',
     'Emerging Digital Customers': '#FFD700',
-    'At-Risk Transitional Customers': '#8A2BE2',
+    'Low Engagement & Financially Vulnerable': '#8A2BE2',
 }
 
 CHART_DIR = os.path.join(os.path.dirname(__file__), "output", "charts")
@@ -31,30 +30,16 @@ print("=" * 70)
 print("PHASE 5: CUSTOMER SEGMENTATION (K-MEANS + RULE-BASED HYBRID)")
 print("=" * 70)
 
-# =====================================================================
-# 1. FEATURE ENGINEERING & PREPROCESSING
-# =====================================================================
+# ---- 1. Feature Engineering ----
 print("\n[1] FEATURE ENGINEERING & PREPROCESSING")
 
-# --- Step 1a: Define clustering features from 3 numeric dimensions ---
-# (Demographics are categorical → used for post-hoc profiling, not clustering)
+# 10 features từ 3 dimension, demographics chỉ dùng profiling sau
 cluster_features = [
-    # Financial Health dimension
-    'financial_health_score',
-    'spend_to_income_ratio',
-    'credit_utilization_ratio',
-    'spending_volatility',
-    # Engagement dimension
-    'engagement_score',
-    'transaction_count',
-    'active_transaction_days',
-    # Spending Behavior dimension
-    'essential_spend_ratio',
-    'online_spend_ratio',
-    'category_diversity',
+    'financial_health_score', 'spend_to_income_ratio',
+    'credit_utilization_ratio', 'spending_volatility',
+    'engagement_score', 'transaction_count', 'active_transaction_days',
+    'essential_spend_ratio', 'online_spend_ratio', 'category_diversity',
 ]
-
-# Demographic features for post-hoc profiling
 demo_features = ['age', 'gender', 'occupation', 'province_city']
 
 print(f"  Clustering features ({len(cluster_features)} from 3 dimensions):")
@@ -63,31 +48,26 @@ print(f"    Engagement:       engagement_score, transaction_count, active_transa
 print(f"    Spending:         essential_spend_ratio, online_spend_ratio, category_diversity")
 print(f"  Demographics (post-hoc): age, gender, occupation, province_city")
 
-# --- Step 1b: Aggregate consumer-month → consumer-level ---
+# Aggregate consumer-month → consumer-level (mean)
 print(f"\n  Aggregating {df.shape[0]:,} consumer-month rows → consumer-level (mean across months)...")
-
-# Numeric aggregation
 agg_dict = {feat: 'mean' for feat in cluster_features}
-# Demographics: take first (static per consumer)
 for d in demo_features:
     agg_dict[d] = 'first'
 
-df_consumer = df.groupby('consumer_id').agg(agg_dict).reset_index()
+# Sort trước để 'first' lấy đúng giá trị
+df_sorted = df.sort_values(by=['consumer_id', 'analysis_month'])
+df_consumer = df_sorted.groupby('consumer_id').agg(agg_dict).reset_index()
 print(f"  Result: {df_consumer.shape[0]:,} unique consumers")
 
-# --- Step 1c: Scale ---
 X = df_consumer[cluster_features].fillna(0)
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 print(f"  Scaling: StandardScaler (mean=0, std=1)")
 
-# =====================================================================
-# 2. MODEL SELECTION — ELBOW + SILHOUETTE + K-MEANS
-# =====================================================================
+# ---- 2. Model Selection ----
 print("\n[2] MODEL SELECTION")
-
-# 2a. Elbow Method
 print("  Running Elbow Method (K=2..10)...")
+
 inertias = []
 sil_scores = []
 K_range = range(2, 11)
@@ -99,7 +79,6 @@ for k in K_range:
     sil_scores.append(sil)
     print(f"    K={k}: Inertia={km.inertia_:,.0f} | Silhouette={sil:.4f}")
 
-# Elbow + Silhouette chart
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
 ax1.plot(list(K_range), inertias, 'o-', color='#FF8C00', linewidth=2, markersize=8)
 ax1.axvline(x=6, color='#DC143C', linestyle='--', label='K=6 (selected)')
@@ -120,7 +99,7 @@ plt.tight_layout(pad=2.0)
 plt.savefig(os.path.join(CHART_DIR, "5_0_elbow_silhouette.png"), dpi=300, bbox_inches='tight')
 plt.show()
 
-# 2b. Final K-Means with K=6
+# Final K-Means
 print("\n  Running final K-Means (K=6) on consumer-level data...")
 kmeans = KMeans(n_clusters=6, random_state=42, n_init=10)
 df_consumer['cluster_id'] = kmeans.fit_predict(X_scaled)
@@ -128,15 +107,13 @@ final_sil = silhouette_score(X_scaled, df_consumer['cluster_id'])
 print(f"  Final Silhouette Score: {final_sil:.4f}")
 print(f"  Clustered {df_consumer.shape[0]:,} consumers (100% coverage)")
 
-# =====================================================================
-# 3. RULE-BASED LABEL MAPPING (ABSOLUTE THRESHOLDS)
-# =====================================================================
+# ---- 3. Gán nhãn segment (absolute thresholds) ----
 print("\n[3] RULE-BASED LABEL MAPPING ON CENTROIDS")
+
 centroids = pd.DataFrame(scaler.inverse_transform(kmeans.cluster_centers_), columns=cluster_features)
 centroids['cluster_id'] = range(6)
 centroids['size'] = df_consumer['cluster_id'].value_counts().sort_index().values
 
-# Print raw centroids for transparency
 print("\n  Raw Centroid Values:")
 for _, row in centroids.iterrows():
     print(f"    Cluster {int(row['cluster_id'])} (n={int(row['size'])}): "
@@ -151,48 +128,43 @@ for _, row in centroids.iterrows():
           f"ActiveDays={row['active_transaction_days']:.0f} | "
           f"CatDiv={row['category_diversity']:.1f}")
 
-# Rule-based mapping using RELATIVE centroid analysis
-# (Consumer-level aggregation compresses value ranges, so we use relative
-#  ranking across centroids rather than hard absolute thresholds)
+
 def assign_label(row, all_centroids):
+    """Gán nhãn segment dựa trên absolute thresholds.
+    Thứ tự rule quan trọng: rule cụ thể hơn phải đứng trước."""
     h = row['financial_health_score']
     e = row['engagement_score']
     ess = row['essential_spend_ratio']
-    onl = row['online_spend_ratio']
-    si = row['spend_to_income_ratio']
     vol = row['spending_volatility']
     txn = row['transaction_count']
 
-    # Compute relative ranks (percentiles within centroids)
-    h_rank = (all_centroids['financial_health_score'] <= h).mean()
-    e_rank = (all_centroids['engagement_score'] <= e).mean()
-
-    # Rule 1: Disengaged — very low engagement (bottom of centroids)
-    if e_rank <= 0.2:
+    # Nhóm disengaged tách trước
+    if e < 60 and h >= 65:
         return "Financially Healthy but Disengaged"
+    if e < 60 and h < 65:
+        return "Low Engagement & Financially Vulnerable"
 
-    # Rule 2: Healthy & Engaged — highest health + good engagement
-    if h_rank >= 0.8 and e_rank >= 0.5:
+    if h >= 68 and e >= 75:
         return "Financially Healthy & Highly Engaged"
 
-    # Rule 3: Stretched — worst health + highest spend-to-income among engaged clusters
-    if h_rank <= 0.25 and si >= all_centroids['spend_to_income_ratio'].quantile(0.7):
+    # health < 62 bắt cluster có health=60.6, spend/inc=0.884
+    if h < 62 and e >= 70:
         return "Financially Stretched but Highly Engaged"
 
-    # Rule 4: Emerging Digital — very high engagement + high volatility/txn count
-    if e_rank >= 0.8 and vol >= all_centroids['spending_volatility'].quantile(0.7):
+    # Emerging Digital: engagement cao + volatility cao + txn count cao
+    # Phải đặt trước Essential vì cả 2 nhóm đều có essential ~0.48
+    median_txn = all_centroids['transaction_count'].median()
+    if e >= 78 and vol >= 1.8 and txn >= median_txn:
         return "Emerging Digital Customers"
 
-    # Rule 5: Essential-Focused — moderate-to-high essential ratio + lower volatility (stable spending)
-    if ess >= all_centroids['essential_spend_ratio'].quantile(0.4) and h_rank >= 0.4 and vol <= all_centroids['spending_volatility'].median():
+    if ess >= 0.45:
         return "Essential-Spend-Focused Customers"
 
-    # Rule 6: At-Risk Transitional — everything else (moderate health, moderate engagement)
-    return "At-Risk Transitional Customers"
+    return "Low Engagement & Financially Vulnerable"
+
 
 centroids['segment_name'] = centroids.apply(lambda row: assign_label(row, centroids), axis=1)
 
-# Map labels back to df_consumer
 cluster_to_label = dict(zip(centroids['cluster_id'].astype(int), centroids['segment_name']))
 df_consumer['segment_name'] = df_consumer['cluster_id'].map(cluster_to_label)
 
@@ -206,56 +178,43 @@ seg_dist = df_consumer['segment_name'].value_counts()
 for seg_name, cnt in seg_dist.items():
     print(f"    {seg_name}: {cnt} consumers ({cnt/len(df_consumer)*100:.1f}%)")
 
-# Verify: check all 6 labels are assigned
+# Kiểm tra đủ 6 segment
 assigned_labels = set(centroids['segment_name'])
-expected_labels = set(SEGMENT_COLORS.keys())
-missing = expected_labels - assigned_labels
+missing = set(SEGMENT_COLORS.keys()) - assigned_labels
 if missing:
     print(f"\n  WARNING: Missing segments: {missing}")
 else:
     print("\n  All 6 personas successfully mapped!")
 
-# =====================================================================
-# 4. DEMOGRAPHIC PROFILING PER SEGMENT
-# =====================================================================
+# ---- 4. Demographic Profiling ----
 print("\n[4] DEMOGRAPHIC PROFILING PER SEGMENT")
 
 for seg_name in seg_dist.index:
     seg_data = df_consumer[df_consumer['segment_name'] == seg_name]
     n = len(seg_data)
     print(f"\n  --- {seg_name} (n={n}, {n/len(df_consumer)*100:.1f}%) ---")
-
-    # Age
     print(f"    Avg Age: {seg_data['age'].mean():.1f}")
 
-    # Gender
     gender_dist = seg_data['gender'].value_counts(normalize=True) * 100
     gender_str = " | ".join([f"{g}: {p:.1f}%" for g, p in gender_dist.items()])
     print(f"    Gender: {gender_str}")
 
-    # Top 3 occupations
-    top_occ = seg_data['occupation'].value_counts().head(3)
     print(f"    Top 3 Occupations:")
-    for occ, cnt in top_occ.items():
+    for occ, cnt in seg_data['occupation'].value_counts().head(3).items():
         print(f"      {occ}: {cnt} ({cnt/n*100:.1f}%)")
 
-    # Top 3 provinces
-    top_prov = seg_data['province_city'].value_counts().head(3)
     print(f"    Top 3 Provinces:")
-    for prov, cnt in top_prov.items():
+    for prov, cnt in seg_data['province_city'].value_counts().head(3).items():
         print(f"      {prov}: {cnt} ({cnt/n*100:.1f}%)")
 
-# =====================================================================
-# 5. POST-SEGMENTATION COMPARISON (VISUALIZATION)
-# =====================================================================
+# ---- 5. Charts ----
 print("\n[5] GENERATING CHARTS...")
 
-# Key display features for radar and heatmap (subset of cluster_features)
 display_features = ['financial_health_score', 'engagement_score', 'spend_to_income_ratio',
                     'credit_utilization_ratio', 'essential_spend_ratio', 'online_spend_ratio',
                     'spending_volatility', 'category_diversity']
 
-# --- 5A. SIDE-BY-SIDE COMPARISON TABLE ---
+# Bảng so sánh
 print("\n  Side-by-Side Comparison Table:")
 comp_header = f"  {'Segment':<45s}"
 for f in display_features:
@@ -269,7 +228,7 @@ for _, row in centroids.sort_values('financial_health_score', ascending=False).i
         line += f" {row[f]:>12.3f}"
     print(line)
 
-# --- 5B. RADAR CHART ---
+# Radar chart
 radar_features = ['financial_health_score', 'engagement_score', 'spend_to_income_ratio',
                   'credit_utilization_ratio', 'essential_spend_ratio', 'online_spend_ratio']
 
@@ -281,19 +240,17 @@ angles = np.linspace(0, 2 * np.pi, len(radar_features), endpoint=False).tolist()
 angles += angles[:1]
 
 fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
-
 for _, row in radar_data.iterrows():
     seg = row['Segment']
-    values = row[radar_features].tolist()
-    values += values[:1]
-    color = SEGMENT_COLORS[seg]
-    ax.plot(angles, values, color=color, linewidth=2, label=seg)
-    ax.fill(angles, values, color=color, alpha=0.1)
+    values = row[radar_features].tolist() + [row[radar_features[0]]]
+    ax.plot(angles, values, color=SEGMENT_COLORS[seg], linewidth=2, label=seg)
+    ax.fill(angles, values, color=SEGMENT_COLORS[seg], alpha=0.1)
 
 ax.set_theta_offset(np.pi / 2)
 ax.set_theta_direction(-1)
 ax.set_xticks(angles[:-1])
-ax.set_xticklabels(['Health\nScore', 'Engagement\nScore', 'Spend/\nIncome', 'Credit\nUtil', 'Essential\nRatio', 'Online\nRatio'], fontsize=11, fontweight='bold')
+ax.set_xticklabels(['Health\nScore', 'Engagement\nScore', 'Spend/\nIncome',
+                     'Credit\nUtil', 'Essential\nRatio', 'Online\nRatio'], fontsize=11, fontweight='bold')
 ax.set_yticks([])
 plt.title('Post-Segmentation Comparison: 6 Persona Radar Profiles', size=16, fontweight='bold', y=1.1)
 plt.legend(loc='upper right', bbox_to_anchor=(1.45, 1.1), fontsize=9)
@@ -301,9 +258,8 @@ plt.tight_layout()
 plt.savefig(os.path.join(CHART_DIR, "5_1_segmentation_radar_chart.png"), dpi=300, bbox_inches='tight')
 plt.show()
 
-# --- 5C. HEATMAP: SEGMENT × METRIC ---
+# Heatmap
 heatmap_data = centroids.set_index('segment_name')[display_features]
-# Normalize per column (0-1) for comparable colors
 heatmap_norm = (heatmap_data - heatmap_data.min()) / (heatmap_data.max() - heatmap_data.min())
 
 plt.figure(figsize=(14, 7))
@@ -311,12 +267,13 @@ sns.heatmap(heatmap_norm, annot=heatmap_data.round(3).values, fmt='',
             cmap='YlOrRd', linewidths=1, linecolor='white',
             xticklabels=[f.replace('_', '\n') for f in display_features],
             yticklabels=heatmap_data.index, cbar_kws={'label': 'Normalized Value'})
-plt.title('Segment × Metric Heatmap (values = actual centroid, colors = normalized)', fontsize=14, fontweight='bold', pad=15)
+plt.title('Segment × Metric Heatmap (values = actual centroid, colors = normalized)',
+          fontsize=14, fontweight='bold', pad=15)
 plt.tight_layout()
 plt.savefig(os.path.join(CHART_DIR, "5_4_segment_heatmap.png"), dpi=300, bbox_inches='tight')
 plt.show()
 
-# --- 5D. PCA SCATTER PLOT ---
+# PCA scatter
 pca = PCA(n_components=2)
 X_pca = pca.fit_transform(X_scaled)
 df_consumer['pca1'] = X_pca[:, 0]
@@ -337,7 +294,7 @@ plt.tight_layout()
 plt.savefig(os.path.join(CHART_DIR, "5_2_segmentation_pca_scatter.png"), dpi=300, bbox_inches='tight')
 plt.show()
 
-# --- 5E. SEGMENT SIZE BAR CHART ---
+# Segment size bar chart
 seg_sizes = df_consumer['segment_name'].value_counts()
 colors_ordered = [SEGMENT_COLORS[s] for s in seg_sizes.index]
 
@@ -352,14 +309,16 @@ plt.tight_layout()
 plt.savefig(os.path.join(CHART_DIR, "5_3_segment_sizes.png"), dpi=300, bbox_inches='tight')
 plt.show()
 
-# =====================================================================
-# 6. MAP SEGMENTS BACK TO ORIGINAL consumer-month DATA
-# =====================================================================
-# For downstream tasks that need consumer-month level data
+# ---- 6. Map segments về consumer-month và export ----
 consumer_segment_map = df_consumer.set_index('consumer_id')['segment_name'].to_dict()
 df['segment_name'] = df['consumer_id'].map(consumer_segment_map)
 print(f"\n[6] Mapped segments back to {len(df):,} consumer-month records (100% coverage)")
 print(df['segment_name'].value_counts().to_string())
+
+# Lưu CSV
+export_path = os.path.join(DATA_DIR, "clustered_consumer_data.csv")
+df_consumer.to_csv(export_path, index=False)
+print(f"\n[7] Exported clustered dataset to: {export_path}")
 
 print("\n" + "=" * 70)
 print(f"All charts saved to: {os.path.abspath(CHART_DIR)}")

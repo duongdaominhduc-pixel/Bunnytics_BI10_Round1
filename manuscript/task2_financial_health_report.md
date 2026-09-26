@@ -9,12 +9,12 @@
 *(Addressing: "How healthy are customers financially?")*
 
 **Verified Data Points:**
-- **Mean score**: 66.37 | **Median**: 67.70 (right-skewed distribution — majority of customers are reasonably healthy).
+- **Mean score**: 66.37 | **Median**: 67.70 (**negatively skewed** distribution, skewness = −0.916 — a long tail of financially stressed outliers pulls the mean (66.37) below the median (67.70)).
 - **Score range**: 0.80 – 90.20.
 - **Risk zone** (score < 40): Only **95 records** (0.9% of all consumer-months).
 - **Warning zone** (score < 50): **524 records** (4.8%).
 - **Std**: 9.48 | **Skewness**: −0.916 (moderate left-skew — a long tail of financially stressed outliers pulling the distribution left).
-- **Temporal trend**: The average score remains stable from January to November (~63–74). However, **December shows a sharp decline to 54.25**, likely driven by end-of-year holiday spending spikes that temporarily inflate the `spend_to_income_ratio`. This represents a **~14-point drop** from the annual average and highlights the need for proactive budget alerts before the holiday season.
+- **Temporal trend**: The average score remains stable from January to November (~63–74). However, **December shows a sharp decline to 54.25**, likely driven by end-of-year holiday spending spikes that temporarily inflate the `spend_to_income_ratio`. This represents a **~13-point drop** from the January–November average (67.46) and highlights the need for proactive budget alerts before the holiday season.
 
 **Key Takeaway**: The overwhelming majority of customers maintain scores above 60. However, a small but critical 4.8% are in the warning zone and require proactive support. The December deterioration signals a seasonal vulnerability window that the company should anticipate with pre-holiday financial wellness campaigns.
 
@@ -27,7 +27,7 @@
 | Cần theo dõi | 2,457 | 22.4% | 53.9 | 54.4 |
 | Có dấu hiệu căng thẳng tài chính | 95 | 0.9% | 29.1 | 34.3 |
 
-**Insight**: The distribution is heavily right-skewed toward financial stability — **76.8%** of consumer-months fall into the top two segments (Khỏe mạnh + Ổn định). The "Cần theo dõi" segment (22.4%) represents the primary intervention target, while the critically stressed segment (0.9%) requires immediate, tailored support.
+**Insight**: The distribution is heavily concentrated toward financial stability — **76.8%** of consumer-months fall into the top two segments (Khỏe mạnh + Ổn định). The "Cần theo dõi" segment (22.4%) represents the primary intervention target, while the critically stressed segment (0.9%) requires immediate, tailored support.
 
 ---
 
@@ -52,6 +52,8 @@ Using both Pearson Correlation and Random Forest Feature Importance (n_estimator
 
 💡 **Inverse Insight (Positive Signal)**: `essential_spend_ratio` exhibits a **positive** correlation (+0.481). Customers who allocate a larger proportion of spending to essential categories (groceries, healthcare, education) demonstrate fundamentally healthier financial profiles. This validates the intuition that disciplined, needs-based spending correlates with stability.
 
+> **Note on Correlation vs. RF Importance ranking**: `credit_utilization_ratio` has the 2nd-highest |r| (0.862) but only 4.2% RF importance, while `spending_volatility` (|r| = 0.496) has 6.3%. This discrepancy arises from **multicollinearity**: `spend_to_income_ratio` and `credit_utilization_ratio` are highly correlated with each other, so the Random Forest assigns most importance to whichever feature it splits on first (spend_to_income, 86.4%), leaving little residual importance for credit_utilization. Correlation measures each feature's individual linear association independently.
+
 ### Partial Dependence Plots (Top 3 Drivers)
 
 PDP analysis (via Random Forest) confirms the **non-linear** relationship between drivers and health score:
@@ -72,7 +74,7 @@ PDP analysis (via Random Forest) confirms the **non-linear** relationship betwee
 |-----------|-----------|-------------|
 | 15–25 | 65.2 | 66.9 |
 | 26–35 | 66.2 | 67.2 |
-| 36–45 | 66.4 | 67.4 |
+| 36–45 | 66.4 | 67.3 |
 | 46–60 | 66.3 | 67.8 |
 | 60+ | 66.9 | 68.6 |
 
@@ -84,10 +86,15 @@ PDP analysis (via Random Forest) confirms the **non-linear** relationship betwee
 | Kỹ sư sản xuất (Manufacturing Engineer) | **71.9** (Highest) |
 | Nhà khoa học thính học (Audiologist) | 71.2 |
 | Kỹ sư vật liệu (Materials Engineer) | 71.1 |
-| ... | ... |
+| Nhà khoa học y sinh (Biomedical Scientist) | 71.0 |
+| Nhà địa chất hiện trường (Field Geologist) | 65.1 |
+| Chuyên viên dựng phim (Film Editor) | 64.9 |
+| Chuyên viên trắc địa (Surveyor) | 64.8 |
+| Nhà thiết kế gốm sứ (Ceramic Designer) | 64.1 |
+| Nhà trị liệu tâm lý trẻ em (Child Psychologist) | 64.0 |
 | Biên tập viên chuyên đề tạp chí (Magazine Editor) | **63.3** (Lowest) |
 
-**Finding**: An **8.5-point gap** separates the highest-scoring occupation (Manufacturing Engineers, 71.9) from the lowest (Magazine Editors, 63.3). Engineering and scientific professions consistently score higher, likely reflecting more stable income streams and disciplined spending patterns.
+**Finding**: An **8.6-point gap** separates the highest-scoring occupation (Manufacturing Engineers, 71.9) from the lowest (Magazine Editors, 63.3). A clear tier structure emerges: the top 4 (engineering and scientific professions) cluster tightly at 71.0–71.9, while the bottom 6 (creative and field professions) cluster at 63.3–65.1 — reflecting systematic differences in income stability and spending discipline.
 
 ### Top 5 Provinces (by customer count)
 | Province | Mean Score | Median |
@@ -116,51 +123,59 @@ PDP analysis (via Random Forest) confirms the **non-linear** relationship betwee
 *(Addressing: "Which customers are highly engaged but financially stretched?")*
 
 ### Cutoff Justification
-- **Health < 50**: We adopt 50 (rather than the dataset's built-in 40 threshold for `next_month_low_health_flag`) to capture not only currently distressed customers (score < 40, 0.9%) but also those in the **warning zone (40–50)** who are trending toward vulnerability. Combined, this represents the bottom **4.8%** of all consumer-months (524 records).
-- **Engagement > 60**: Selected as the baseline for meaningful digital interaction. Given the dataset's inherently high engagement distribution (median = 78.1, a design characteristic noted in the case study), this threshold identifies customers who maintain at least moderate digital channel usage.
+- **Health < 50** ("Stressed"): We adopt 50 (rather than the dataset's built-in 40 threshold for `next_month_low_health_flag`) to capture not only currently distressed customers (score < 40, 0.9%) but also those in the **warning zone (40–50)** who are trending toward vulnerability. Combined, this represents the bottom **4.8%** of all consumer-months (524 records).
+- **Engagement > 78.1** (dataset median): Using the **median** as a data-driven, reproducible cutoff ensures a balanced split between engaged and disengaged populations. This avoids the pitfall of an arbitrary low threshold (e.g., 60, which would classify 99.2% of stressed records as "engaged" — rendering the comparison meaningless).
+
+> **Note on labeling**: We use "Non-Stressed" (≥ 50) for the quadrant analysis below, distinct from "Khỏe mạnh" (≥ 80) used in section 3.1's four-tier segment classification. The lower cutoff captures the boundary between "warning zone" and "stable" customers for crossover analysis purposes.
 
 ### Verified Segment Size
 | Metric | Value |
 |--------|-------|
-| Consumer-month records | **520** |
-| Unique consumers | **333** |
-| % of total records | 4.7% |
+| Consumer-month records | **337** |
+| Unique consumers | **255** |
+| % of total records | 3.1% |
 
 ### Customer Profile (Detailed)
-These 333 consumers face immediate financial pressure yet demonstrate exceptional digital loyalty. Key metrics:
+These 255 consumers face immediate financial pressure yet demonstrate above-median digital engagement. Key metrics:
 
 | Metric | Value (Segment Avg) | Overall Avg | Gap |
 |--------|---------------------|-------------|-----|
-| Financial Health Score | **43.83** | 66.37 | -22.5 |
-| Engagement Score | **81.75** | ~78 | +3.8 |
-| Spend-to-Income Ratio | **1.576** | ~0.98 | +60.8% higher |
-| Credit Utilization | **0.459** | ~0.25 | +83.6% higher |
-| Essential Spend Ratio | **0.341** | ~0.40 | -14.8% lower |
-| Online Spend Ratio | **0.292** | ~0.28 | +4.3% higher |
-| Spending Volatility | **2.814** | ~1.50 | +87.6% higher |
+| Financial Health Score | **44.14** | 66.37 | −22.2 |
+| Engagement Score | **86.27** | ~77.8 | +8.5 |
+| Spend-to-Income Ratio | **1.565** | ~0.70 | +124% higher |
+| Credit Utilization | **0.462** | ~0.19 | +143% higher |
+| Essential Spend Ratio | **0.346** | ~0.48 | −28% lower |
+| Online Spend Ratio | **0.383** | ~0.20 | +92% higher |
+| Spending Volatility | **2.273** | ~1.51 | +50% higher |
 
 **Demographic highlights:**
-- **Age skew**: 46–60 (31.8%) and 60+ (27.3%) dominate — older customers are over-represented, suggesting mid/late-career financial stress.
-- **Top provinces**: TP. HCM (10.8%), Hà Nội (6.6%), Đồng Nai (5.4%), Cần Thơ (4.8%), Nghệ An (4.8%).
-- **Occupations**: Highly fragmented (396 unique); no single occupation dominates, indicating this is a behavioral segment, not a demographic one.
+- **Age skew**: 46–60 (27.8%) and 60+ (28.2%) dominate — over half the segment consists of mid/late-career customers, suggesting financial stress peaks in the older cohorts.
+- **Top provinces**: TP. HCM (11.0%), Hà Nội (5.9%), Đồng Nai (5.1%), Lâm Đồng (4.7%), Nghệ An (4.3%).
+- **Occupations**: Highly fragmented (no single occupation exceeds 1.6%), confirming this is a **behavioral** segment, not a demographic one.
 
-### Cross-Comparison: 3 Quadrant Groups
+### Cross-Comparison: 4 Quadrant Groups
 
-| Metric | Healthy & Engaged (908 consumers) | Stressed & Engaged (333 consumers) | Stressed & Disengaged (4 consumers) |
-|--------|:---:|:---:|:---:|
-| Health Score | 70.4 | **43.8** | 40.8 |
-| Engagement Score | 77.4 | **81.7** | 52.0 |
-| Spend-to-Income | 0.566 | **1.576** (+178%) | 1.151 |
-| Credit Utilization | 0.154 | **0.459** (+198%) | 0.350 |
-| Essential Spend Ratio | 0.505 | **0.341** (−32%) | 0.225 |
-| Online Spend Ratio | 0.194 | **0.292** (+51%) | 0.518 |
-| Spending Volatility | 1.383 | **2.814** (+103%) | 1.768 |
+> **Unit**: Consumer-month records. A consumer may appear in multiple quadrants across different months (e.g., "Non-Stressed" in January but "Stressed" in December). All 10,992 records are accounted for with no overlap at the record level.
 
-**Key contrast**: The Stressed & Engaged group spends nearly **3× their income** compared to Healthy & Engaged peers, yet maintains **higher engagement** (81.7 vs 77.4). This paradox — financial distress combined with digital loyalty — makes them the ideal candidate for in-app intervention. The Stressed & Disengaged group is negligibly small (only 4 consumers), confirming that most financially stressed customers are actually highly digitally active.
+| Metric | Non-Stressed & Engaged (5,075 records) | Stressed & Engaged (337 records) | Stressed & Disengaged (187 records) | Non-Stressed & Disengaged (5,393 records) |
+|--------|:---:|:---:|:---:|:---:|
+| Health Score | 65.5 | **44.1** | 43.2 | 69.3 |
+| Engagement Score | 82.1 | **86.3** | 73.0 | 73.4 |
+| Spend-to-Income | 0.702 | **1.565** (+123%) | 1.588 | 0.612 |
+| Credit Utilization | 0.189 | **0.462** (+144%) | 0.452 | 0.168 |
+| Essential Spend Ratio | 0.461 | **0.346** (−25%) | 0.331 | 0.513 |
+| Online Spend Ratio | 0.263 | **0.383** (+46%) | 0.133 | 0.152 |
+| Spending Volatility | 1.604 | **2.273** (+42%) | **3.766** | 1.404 |
+
+**Key contrasts:**
+1. **Stressed & Engaged vs. Non-Stressed & Engaged**: Despite spending **2.2× their income** compared to stable peers (1.565 vs 0.702), the Stressed & Engaged group maintains **higher engagement** (86.3 vs 82.1). This paradox — financial distress combined with digital loyalty — makes them the ideal candidate for in-app intervention.
+2. **Stressed & Disengaged** (187 records, 151 unique consumers): This group exhibits the **highest spending volatility** (3.766, nearly double that of Stressed & Engaged) but the **lowest online spend ratio** (0.133) — suggesting irregular, mostly offline spending patterns. They are harder to reach via digital channels and may require alternative outreach strategies (e.g., SMS, call center).
+3. **Non-Stressed & Disengaged** (5,393 records, 945 unique consumers): The largest quadrant has the healthiest finances (69.3) but below-median engagement — representing a **growth opportunity** for digital channel adoption campaigns.
 
 ### 🔥 Recommended Non-Punitive Strategies
 *(Strictly avoid credit limit reductions or account suspensions)*
-1. **Real-time Spend Alerts**: Deploy push notifications leveraging their high App engagement (e.g., *"You've reached 80% of your typical monthly discretionary budget"*).
-2. **Proactive Budgeting Tools**: Surface "Smart Budget" or "Spending Goal" features on their App home screen.
-3. **Installment Conversion**: Promote short-term installment plans for large transactions to alleviate immediate cash-flow pressure.
-4. **Financial Literacy Content**: Deliver bite-sized educational content on spending discipline via in-app stories or notifications.
+1. **Real-time Spend Alerts**: Deploy push notifications leveraging their high App engagement (e.g., *"You've reached 80% of your typical monthly discretionary budget"*). **Target**: 255 Stressed & Engaged consumers.
+2. **Proactive Budgeting Tools**: Surface "Smart Budget" or "Spending Goal" features on their App home screen. Their high online_spend_ratio (0.383 vs 0.20 overall) confirms frequent digital channel usage.
+3. **Installment Conversion**: Promote short-term installment plans for large transactions to alleviate immediate cash-flow pressure (spend_to_income = 1.565, credit utilization = 0.462).
+4. **Financial Literacy Content**: Deliver bite-sized educational content on spending discipline via in-app stories or notifications. Priority demographic: 46–60 and 60+ age cohorts (56.0% of segment).
+5. **December Pre-Holiday Alerts**: Deploy proactive budget reminders in November, targeting the ~13-point December score decline identified in section 3.1.

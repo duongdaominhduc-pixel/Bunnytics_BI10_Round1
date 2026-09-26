@@ -38,17 +38,19 @@
 ### Why Hybrid (K-Means + Rule-Based)?
 Pure K-Means assigns arbitrary cluster IDs (0, 1, 2...). A naive "pick the max/min" heuristic mapping can produce **misleading labels**. 
 
-Our solution: Run K-Means first to discover natural data groupings, then apply **relative threshold rules** on centroids to assign business-meaningful labels. This ensures every label is truthful relative to the data distribution.
+Our solution: Run K-Means first to discover natural data groupings, then apply **absolute threshold rules** on centroids (in priority order) to assign business-meaningful labels. This ensures every label is truthful relative to the data distribution and reproducible.
 
-**Threshold Rules Applied (relative centroid ranking):**
+**Threshold Rules Applied (absolute thresholds, priority order):**
 ```
-Rule 1: Disengaged             → engagement_rank ≤ 20th percentile
-Rule 2: Healthy & Engaged      → health_rank ≥ 80th AND engagement_rank ≥ 50th
-Rule 3: Stretched but Engaged  → health_rank ≤ 25th AND spend_to_income ≥ 70th percentile
-Rule 4: Emerging Digital        → engagement_rank ≥ 80th AND volatility ≥ 70th percentile
-Rule 5: Essential-Focused       → essential_ratio ≥ 40th AND volatility ≤ median (stable spending)
-Rule 6: At-Risk Transitional    → everything else (gray zone)
+Rule 1: Disengaged (Healthy)     → engagement < 60 AND health ≥ 65
+Rule 2: Disengaged (Vulnerable)  → engagement < 60 AND health < 65
+Rule 3: Healthy & Engaged        → health ≥ 68 AND engagement ≥ 75
+Rule 4: Stretched but Engaged    → health < 62 AND engagement ≥ 70
+Rule 5: Emerging Digital          → engagement ≥ 78 AND volatility ≥ 1.8 AND txn_count ≥ median
+Rule 6: Essential-Focused         → essential_spend_ratio ≥ 0.45 (catch remaining engaged clusters)
 ```
+
+> **Why absolute thresholds?** With only K=6 centroids, relative percentile ranking (e.g., "top 20th percentile") is meaningless — a centroid at rank 2 of 6 is already at the 67th percentile. Absolute thresholds are interpretable and auditable.
 
 ---
 
@@ -60,7 +62,7 @@ Rule 6: At-Risk Transitional    → everything else (gray zone)
 | 2 | **Financially Healthy & Highly Engaged** | 245 | 24.5% | **71.5** | 78.2 | 0.531 | 0.135 | 0.490 | 0.202 | 1.493 | 13.8 |
 | 3 | **Emerging Digital Customers** | 201 | 20.1% | 65.2 | **80.4** | 0.706 | 0.185 | 0.483 | 0.212 | **1.974** | **14.0** |
 | 4 | **Financially Stretched but Highly Engaged** | 174 | 17.4% | **60.6** | 77.6 | **0.884** | **0.271** | 0.493 | 0.209 | 1.580 | 13.7 |
-| 5 | **At-Risk Transitional** | 52 | 5.2% | 61.0 | **50.8** | 0.701 | 0.210 | 0.112 | **0.703** | 0.657 | 5.0 |
+| 5 | **Low Engagement & Financially Vulnerable** | 52 | 5.2% | 61.0 | **50.8** | 0.701 | 0.210 | 0.112 | **0.703** | 0.657 | 5.0 |
 | 6 | **Financially Healthy but Disengaged** | 39 | 3.9% | **71.7** | **45.8** | 0.509 | 0.130 | 0.211 | **0.588** | 0.722 | 4.8 |
 
 ### Detailed Persona Profiles, Demographics & Actions
@@ -85,7 +87,7 @@ Rule 6: At-Risk Transitional    → everything else (gray zone)
 - *Demographics*: Avg age **49.6** | Male 56.3% | Top provinces: **Lâm Đồng** (7.5%), TP.HCM (6.3%), Thanh Hóa (5.2%) — more rural representation
 - *Action*: **Immediate Non-Punitive Intervention**. Real-time spend alerts, automatic budget caps, and installment conversion programs. **Strictly avoid** credit limit reductions.
 
-**5. At-Risk Transitional Customers (5.2%)**
+**5. Low Engagement & Financially Vulnerable (5.2%)**
 - *Behavioral Profile*: **Lowest engagement** (50.8) among non-disengaged clusters. Extremely low essential spend (0.112) but **highest online ratio** (0.703). Very low category diversity (5.0) and low transaction frequency — they are "single-channel" digital users with limited interaction breadth.
 - *Demographics*: Avg age **56.1** | Gender balanced 50/50 | Top provinces: TP.HCM (19.2%), Quảng Ngãi (9.6%)
 - *Action*: **Multi-Channel Re-engagement**. Combine SMS/email outreach with app push notifications. Promote essential category spending and cross-category discovery.
